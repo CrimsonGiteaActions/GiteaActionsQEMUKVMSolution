@@ -1,0 +1,6 @@
+#!/bin/bash
+
+set -ex
+
+# Automatically shutdown in 120 minutes.
+shutdown +120

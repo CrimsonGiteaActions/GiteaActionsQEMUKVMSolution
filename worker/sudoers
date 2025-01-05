@@ -1,0 +1,4 @@
+%sudo ALL=(ALL) NOPASSWD: ALL
+runner ALL=(ALL) NOPASSWD: ALL
+
+root ALL=(ALL:ALL) ALL
