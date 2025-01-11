@@ -2,7 +2,8 @@
 
 ## Features
 
-Run your Gitea Actions workflow in ephemeral virtual machine.
+- Run your Gitea Actions workflow in ephemeral virtual machine.
+- Isolate gitea act runner `.runner` file from workflow running environment.
 
 ## Choices
 
