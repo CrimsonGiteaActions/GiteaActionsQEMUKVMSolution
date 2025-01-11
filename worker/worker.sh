@@ -47,6 +47,11 @@ while true ; do
   esac
 done
 
+if [[ -z "$qcow2_base_path" || -z "$qcow2_imagename" || -z "$worker_ssh_key" ]]; then
+  echo "Invalid worker setup!"
+  exit 1
+fi
+
 VM_BASE_IMAGE_PATH=$qcow2_base_path
 VM_BASE_IMAGE="$VM_BASE_IMAGE_PATH/$qcow2_imagename"
 VM_ID="gitea-action-$(openssl rand -hex 32)"

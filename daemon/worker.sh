@@ -1,9 +1,9 @@
 #!/bin/bash
 
-ssh_username="root"
-ssh_host="192.168.122.1"
-ssh_port="22"
-ssh_private_key=""
+host_ssh_username="root"
+host_ssh_host="192.168.122.1"
+host_ssh_port="22"
+host_ssh_private_key=""
 
 host_worker_script=""
 host_qcow2_base_path=""
@@ -22,16 +22,16 @@ eval set -- "$CMD_ARGS"
 while true ; do
   case "$1" in
     --host-ssh-user)
-      ssh_username=$2 ;
+      host_ssh_username=$2 ;
       shift 2 ;;
     --host-ssh-host)
-      ssh_host=$2 ;
+      host_ssh_host=$2 ;
       shift 2 ;;
     --host-ssh-port)
-      ssh_port=$2 ;
+      host_ssh_port=$2 ;
       shift 2 ;;
     --host-ssh-key)
-      ssh_private_key=$2 ;
+      host_ssh_private_key=$2 ;
       shift 2 ;;
     --host-worker-script)
       host_worker_script=$2 ;
@@ -63,7 +63,7 @@ while true ; do
   esac
 done
 
-if [[ -z "$ssh_private_key" ]]; then
+if [[ -z "$host_ssh_private_key" ]]; then
   echo "Specific ssh key to connect to host!"
   exit 1
 fi
@@ -73,5 +73,6 @@ if [[ -z "$host_worker_script" || -z "$host_qcow2_base_path" || -z "$host_qcow2_
   exit 1
 fi
 
-ssh -i "$ssh_private_key" -p "$ssh_port" -o BatchMode=yes -o ForwardAgent=no -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$ssh_username@$ssh_host" \
+# worker/worker.sh
+ssh -i "$host_ssh_private_key" -p "$host_ssh_port" -o BatchMode=yes -o ForwardAgent=no -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$host_ssh_username@$host_ssh_host" \
   "bash $host_worker_script --base-path $host_qcow2_base_path --image-name $host_qcow2_imagename --ssh-key $host_worker_ssh_key --vm-network $host_vm_network --vm-memory $host_vm_memory --vm-vcpus $host_vm_vcpus"
