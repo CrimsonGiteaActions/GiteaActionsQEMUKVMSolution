@@ -61,71 +61,52 @@ GITEA_INSTANCE_URL="https://gitea.com"   # Your Gitea instance
 GITEA_RUNNER_REGISTRATION_TOKEN="token"  # Your Gitea Runner registration token.
 WORKING_DIR=$(pwd)
 HOST_SSH_USER="root"        # Username used by daemon container to reach host via SSH
-HOST_SSH_HOST="172.17.0.1"  # IP address used by daemon container to reach host via SSH
-HOST_SSH_PORT="22"          # SSH port used by daemon container to reach host via SSH
 RUNNER_LABELS="ubuntu-latest,ubuntu-22.04"  # Your Gitea Runner labels
 ```
-- Start a daemon container. Assign a static IP to it.
+- Create a Docker network. Designate a static IP for daemon container to use.
 ```shell
 # Change variables to whatever you prefer.
 export DAEMON_CONTAINER_STATIC_IP="172.19.0.3"
 export DAEMON_CONTAINER_NETWORK_NAME="gitea-act-runner"
 export DAEMON_CONTAINER_NETWORK_SUBNET="172.19.0.0/24"
+HOST_SSH_HOST="172.19.0.1"  # IP address used by daemon container to reach host via SSH
+HOST_SSH_PORT="22"          # SSH port used by daemon container to reach host via SSH
+export GITEA_RUNNER_WORKER="bash,/home/runner/worker.sh,--host-ssh-user,$HOST_SSH_USER,--host-ssh-key,/home/runner/daemon-to-host,--host-ssh-host,$HOST_SSH_HOST,--host-ssh-port,$HOST_SSH_PORT,--host-worker-script,$WORKING_DIR/worker/worker.sh,--host-worker-base-path,$WORKING_DIR/worker,--host-worker-image-name,$GITEA_ACTIONS_WORKER_BASE_IMAGE,--host-worker-ssh-key,$WORKING_DIR/worker/worker"
+echo $GITEA_RUNNER_WORKER
 
 docker network rm $DAEMON_CONTAINER_NETWORK_NAME
 docker network create --driver bridge --subnet $DAEMON_CONTAINER_NETWORK_SUBNET $DAEMON_CONTAINER_NETWORK_NAME
-
+```
+- Register Gitea act runner and Start Gitea act runner daemon,
+  with `GITEA_ACTIONS_RUNNER_OUTBOUND_IP` environment variable set as daemon container's static IP.
+  Optionally, set `GITEA_ACTIONS_CACHE_SERVER_URL` to use a dedicated cache server instance.
+```shell
+rm -rf $WORKING_DIR/.runner
+touch $WORKING_DIR/.runner
+chown 1000:1000 $WORKING_DIR/.runner
 docker run -itd --restart unless-stopped --name $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME \
   --network $DAEMON_CONTAINER_NETWORK_NAME \
   --ip $DAEMON_CONTAINER_STATIC_IP \
   --cpus 1 \
-  --memory 512M \
+  -m 256MB \
   -e GITEA_ACTIONS_RUNNER_OUTBOUND_IP=$DAEMON_CONTAINER_STATIC_IP \
-  -e GITEA_INSTANCE_URL \
-  -e HOST_SSH_USER \
-  -e HOST_SSH_HOST \
-  -e HOST_SSH_PORT \
-  -e RUNNER_LABELS \
-  $GITEA_ACTIONS_RUNNER_DAEMON_DOCKER_TAG bash
-```
-- Copy `daemon-to-host` SSH private key into daemon container
-```shell
+  -e GITEA_INSTANCE_URL=$GITEA_INSTANCE_URL \
+  -e HOST_SSH_USER=$HOST_SSH_USER \
+  -e HOST_SSH_HOST=$HOST_SSH_HOST \
+  -e HOST_SSH_PORT=$HOST_SSH_PORT \
+  -e RUNNER_LABELS=$RUNNER_LABELS \
+  -e GITEA_RUNNER_REGISTRATION_TOKEN=$GITEA_RUNNER_REGISTRATION_TOKEN \
+  -e GITEA_RUNNER_WORKER=$GITEA_RUNNER_WORKER \
+  --volume $WORKING_DIR/.runner:/home/runner/.runner:rw \
+  $GITEA_ACTIONS_RUNNER_DAEMON_DOCKER_TAG
+
 docker cp $WORKING_DIR/daemon-to-host $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME:/home/runner/
 docker exec --user root $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME chmod 0400 /home/runner/daemon-to-host
 docker exec --user root $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME chown runner:runner /home/runner/daemon-to-host
 docker exec --user root $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME ls -alh /home/runner
-```
-- Register Gitea act runner
-```shell
-docker exec -it $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME bash -c "
-set +o history
-set -ex
 
-cd /home/runner
-
-./gitea-actions-runner register \
-  --instance "$GITEA_INSTANCE_URL" \
-  --token "$GITEA_RUNNER_REGISTRATION_TOKEN" \
-  --worker "bash,/home/runner/worker.sh,--host-ssh-user,$HOST_SSH_USER,--host-ssh-key,/home/runner/daemon-to-host,--host-ssh-host,$HOST_SSH_HOST,--host-ssh-port,$HOST_SSH_PORT,--host-worker-script,$WORKING_DIR/worker/worker.sh,--host-worker-base-path,$WORKING_DIR/worker,--host-worker-image-name,$GITEA_ACTIONS_WORKER_BASE_IMAGE,--host-worker-ssh-key,$WORKING_DIR/worker/worker" \
-  --labels "$RUNNER_LABELS" \
-  --no-interactive
-
-rm -rf ~/.bash_history
-history -c
-"
-
+unset GITEA_RUNNER_WORKER
 unset GITEA_RUNNER_REGISTRATION_TOKEN
-```
-- Start Gitea act runner daemon,
-  with `GITEA_ACTIONS_RUNNER_OUTBOUND_IP` environment variable set as daemon container's static IP.
-  Optionally, set `GITEA_ACTIONS_CACHE_SERVER_URL` to use a dedicated cache server instance.
-```shell
-docker stop $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME
-docker start $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME
-docker exec -d $GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME bash -c "
-cd /home/runner
-./gitea-actions-runner daemon
-"
 ```
 
 

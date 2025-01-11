@@ -3,7 +3,12 @@
 set -e
 
 apt-get -y update
-apt-get -y install ca-certificates curl make git vim nano sudo wget binutils unzip python3 qemu-guest-agent
+apt-get -y install ca-certificates sed
+
+sed -i 's/http/https/g' /etc/apt/sources.list
+
+apt-get -y update
+apt-get -y install curl make git vim nano sudo wget binutils unzip python3 qemu-guest-agent
 
 install -m 0755 -d /etc/apt/keyrings
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
@@ -19,7 +24,12 @@ apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 
 ########################################################################
 
+apt-get -y upgrade
+
+########################################################################
+
 apt-get clean
+rm -rf /var/lib/apt/lists/*
 rm -rf ~/.bash_history
 
 ########################################################################

@@ -16,7 +16,7 @@ worker_ssh_key=""
 
 VM_NETWORK="default"
 VM_VCPUS="2"
-VM_MEMORY_MB="4096"
+VM_MEMORY_MB="6144"
 
 while true ; do
   case "$1" in
