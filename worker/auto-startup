@@ -1,0 +1,8 @@
+#!/bin/bash
+
+set -x
+
+systemctl enable qemu-guest-agent
+systemctl start qemu-guest-agent
+systemctl enable docker
+systemctl start docker

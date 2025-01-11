@@ -9,8 +9,11 @@ virt-customize -a $qcow2_image \
   --no-logfile \
   --hostname worker \
   --copy-in $WORKING_DIR/auto-shutdown:/etc/init.d/ \
+  --copy-in $WORKING_DIR/auto-startup:/etc/init.d/ \
   --run-command "chown root:root /etc/init.d/auto-shutdown" \
+  --run-command "chown root:root /etc/init.d/auto-startup" \
   --run-command "chmod 755 /etc/init.d/auto-shutdown" \
+  --run-command "chmod 755 /etc/init.d/auto-startup" \
   --run install0.sh \
   --ssh-inject root:file:$WORKING_DIR/worker.pub \
   --copy-in $WORKING_DIR/sshd_config:/etc/ssh/ \

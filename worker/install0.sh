@@ -19,10 +19,6 @@ apt-get -y install docker-ce docker-ce-cli containerd.io docker-buildx-plugin do
 
 ########################################################################
 
-systemctl enable qemu-guest-agent docker.service docker.socket
-
-########################################################################
-
 apt-get clean
 rm -rf ~/.bash_history
 
