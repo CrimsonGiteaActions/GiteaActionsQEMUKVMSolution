@@ -16,7 +16,7 @@ worker_ssh_key=""
 
 VM_NETWORK="default"
 VM_VCPUS="2"
-VM_MEMORY_MB="6144"
+VM_MEMORY_MB="4096"
 
 while true ; do
   case "$1" in
@@ -78,7 +78,7 @@ prepare_vm() {
   echo "Preparing"
   qemu-img create -f qcow2 -b "$VM_BASE_IMAGE" "$VM_IMAGE" -F qcow2 </dev/null
   # https://serverfault.com/questions/1167930/gnutls-error-signal-4-on-qemu-kvm-with-cpu-set-to-host-model
-  virt-install --name "$VM_ID" --os-variant debian10 \
+  virt-install --name "$VM_ID" --os-variant debian11 \
     --cpu host-passthrough \
     --disk "$VM_IMAGE" \
     --import \

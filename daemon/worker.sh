@@ -11,7 +11,7 @@ host_qcow2_imagename=""
 host_worker_ssh_key=""
 host_vm_network="default"
 host_vm_vcpus="2"
-host_vm_memory="6144"
+host_vm_memory="4096"
 
 CMD_ARGS=$(getopt -a \
   -o "" \

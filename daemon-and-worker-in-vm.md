@@ -1,33 +1,11 @@
 ## Prerequisites
 
-An amd64-architecture host that supports (nested) virtualization. Modern Linux. Debian/Ubuntu preferred.
-
-For arm64, this solution should work in similar way. Not tested.
+An amd64-architecture host that supports (nested) virtualization. Modern Linux. Debian 12 preferred.
 
 - QEMU KVM Hypervisor
 - Docker daemon
-- [d2vm]
 - 20-40 GB free disk space (rough estimation)
 - At least 4GB RAM (rough estimation)
-
-
-**Build [d2vm] from source**:
-```shell
-GO_TAR="go1.23.4.linux-$(dpkg --print-architecture).tar.gz"
-sudo rm -rf $GO_TAR
-wget -O "$GO_TAR" -4 https://go.dev/dl/$GO_TAR
-sudo rm -rf /usr/local/go && sudo tar -C /usr/local -xzf $GO_TAR
-sudo rm -rf $GO_TAR
-unset GO_TAR
-export PATH=$PATH:/usr/local/go/bin
-git clone https://github.com/linka-cloud/d2vm && cd d2vm
-sudo rm -rf /usr/local/bin/d2vm
-make install # No sudo here. If non-root user account, add to docker group first!
-```
-**Find `d2vm` executable in `~/go/bin` (if it's there. Refer to [d2vm] README for more info), move it to `$PATH`.**
-```shell
-sudo mv ~/go/bin/d2vm /usr/local/bin/
-```
 
 
 ## Steps
@@ -63,12 +41,16 @@ ssh-keygen -t rsa -b 2048 -f daemon-to-host -N ""
 # Use whichever QEMU KVM network interface you prefer.
 export VM_NETWORK="default"
 ```
+- Because systemd-resolved will be used in VM, make sure you designate an upstream DNS server for it:
+```shell
+# Set a variable. Will be used in install.sh script
+export UPSTREAM_DNS="1.1.1.1"
+```
 
 ### Daemon install
 
 - Set variables
 ```shell
-export GITEA_ACTIONS_RUNNER_DAEMON_DOCKER_IMAGE="ubuntu:22.04"
 export GITEA_ACTIONS_RUNNER_DAEMON_BASE_IMAGE="gitea-actions-runner-daemon.qcow2"
 export GITEA_ACTIONS_RUNNER_DAEMON_BASE_IMAGE_SIZE="10G"
 export GITEA_ACTIONS_RUNNER_DAEMON_VM_NAME="gitea-actions-runner-daemon-1"
@@ -81,11 +63,9 @@ GITEA_ACTIONS_RUNNER_EXECUTABLE="https://github.com/CrimsonGiteaActions/Christop
 wget -O "gitea-actions-runner" $GITEA_ACTIONS_RUNNER_EXECUTABLE
 unset GITEA_ACTIONS_RUNNER_EXECUTABLE
 ```
-- Run `d2vm.sh`:
+- Run `install.sh`:
 ```shell
-./d2vm.sh --docker-image $GITEA_ACTIONS_RUNNER_DAEMON_DOCKER_IMAGE \
-  --qcow2-output $GITEA_ACTIONS_RUNNER_DAEMON_BASE_IMAGE \
-  --qcow2-size   $GITEA_ACTIONS_RUNNER_DAEMON_BASE_IMAGE_SIZE
+./install.sh --qcow2-output $GITEA_ACTIONS_RUNNER_DAEMON_BASE_IMAGE --qcow2-size $GITEA_ACTIONS_RUNNER_DAEMON_BASE_IMAGE_SIZE
 ```
 - Start virtual machine:
 ```shell
@@ -93,7 +73,7 @@ qemu-img create -f qcow2 -b $GITEA_ACTIONS_RUNNER_DAEMON_BASE_IMAGE \
   -F qcow2 $GITEA_ACTIONS_RUNNER_DAEMON_VM_DISK </dev/null
 
 virt-install --name $GITEA_ACTIONS_RUNNER_DAEMON_VM_NAME \
-    --os-variant debian10 \
+    --os-variant debian11 \
     --cpu host-passthrough \
     --disk $GITEA_ACTIONS_RUNNER_DAEMON_VM_DISK \
     --import \
@@ -125,6 +105,7 @@ Then apply settings
 virsh net-destroy $VM_NETWORK # Only if required.
 virsh net-start $VM_NETWORK
 virsh net-autostart $VM_NETWORK
+virsh net-dumpxml $VM_NETWORK
 ```
 
 ### VM network setup
@@ -148,9 +129,8 @@ virsh net-dumpxml $VM_NETWORK
 
 - Set variables
 ```shell
+export GITEA_ACTIONS_WORKER_BASE_IMAGE="debian-act-12.qcow2"
 # Change values to whatever you like.
-export GITEA_ACTIONS_WORKER_DOCKER_IMAGE="ghcr.io/catthehacker/ubuntu:act-22.04"
-export GITEA_ACTIONS_WORKER_BASE_IMAGE="ubuntu-act-2204.qcow2"
 export GITEA_ACTIONS_WORKER_BASE_IMAGE_SIZE="14G"
 ```
 - Navigate to `worker` directory
@@ -160,11 +140,9 @@ GITHUB_RUNNER="https://github.com/actions/runner/releases/download/v2.321.0/acti
 wget -O "runner.tar.gz" $GITHUB_RUNNER
 unset GITHUB_RUNNER
 ```
-- Run `d2vm.sh`:
+- Run `install.sh`:
 ```shell
-./d2vm.sh --docker-image $GITEA_ACTIONS_WORKER_DOCKER_IMAGE \
-  --qcow2-output $GITEA_ACTIONS_WORKER_BASE_IMAGE \
-  --qcow2-size   $GITEA_ACTIONS_WORKER_BASE_IMAGE_SIZE
+./install.sh --qcow2-output $GITEA_ACTIONS_WORKER_BASE_IMAGE  --qcow2-size $GITEA_ACTIONS_WORKER_BASE_IMAGE_SIZE
 ```
 
 ### Daemon setup
@@ -191,11 +169,11 @@ EOS
 ```shell
 GITEA_INSTANCE_URL="https://gitea.com"   # Your Gitea instance 
 GITEA_RUNNER_REGISTRATION_TOKEN="token"  # Your Gitea Runner registration token.
+RUNNER_LABELS="debian-latest,debian-12"  # Your Gitea Runner labels
 WORKING_DIR=$(pwd)
 HOST_SSH_USER="root"           # Username used by daemon VM to reach host via SSH
 HOST_SSH_HOST="192.168.122.1"  # IP address used by daemon VM to reach host via SSH
 HOST_SSH_PORT="22"             # SSH port used by daemon VM to reach host via SSH
-RUNNER_LABELS="ubuntu-latest,ubuntu-22.04"  # Your Gitea Runner labels
 ```
 ```shell
 ssh -t -i $WORKING_DIR/vm/daemon/daemon \
@@ -270,6 +248,20 @@ rm -rf ~/.bash_history
 history -c
 EOS
 ```
+```shell
+ssh -t -i $WORKING_DIR/vm/daemon/daemon \
+  -o BatchMode=yes -o ForwardAgent=no -o IdentitiesOnly=yes -o StrictHostKeyChecking=no root@$DAEMON_VM_STATIC_IP <<EOS
+set +o history
+set -ex
+
+systemctl restart gitea-actions-runner
+sleep 1
+systemctl status gitea-actions-runner
+
+rm -rf ~/.bash_history
+history -c
+EOS
+```
 
 ## Reference
 
@@ -278,4 +270,3 @@ EOS
 
 [gitea_runner_daemon]: https://github.com/CrimsonGiteaActions/ChristopherHX-gitea-actions-runner
 [github_runner]: https://github.com/actions/runner
-[d2vm]: https://github.com/linka-cloud/d2vm

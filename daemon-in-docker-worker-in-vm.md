@@ -24,6 +24,10 @@ ssh-keygen -t rsa -b 2048 -f daemon-to-host -N ""
 # Use whichever QEMU KVM network interface you prefer.
 export VM_NETWORK="default"
 ```
+```shell
+# Set a variable. Will be used in install.sh script
+export UPSTREAM_DNS="1.1.1.1"
+```
 
 ### Daemon install
 
@@ -61,7 +65,7 @@ GITEA_INSTANCE_URL="https://gitea.com"   # Your Gitea instance
 GITEA_RUNNER_REGISTRATION_TOKEN="token"  # Your Gitea Runner registration token.
 WORKING_DIR=$(pwd)
 HOST_SSH_USER="root"        # Username used by daemon container to reach host via SSH
-RUNNER_LABELS="ubuntu-latest,ubuntu-22.04"  # Your Gitea Runner labels
+RUNNER_LABELS="debian-latest,debian-12"  # Your Gitea Runner labels
 ```
 - Create a Docker network. Designate a static IP for daemon container to use.
 ```shell
