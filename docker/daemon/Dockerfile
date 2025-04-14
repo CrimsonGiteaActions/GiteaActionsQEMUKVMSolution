@@ -5,7 +5,6 @@ USER 0
 WORKDIR /root
 
 RUN useradd -u 1000 -G sudo -m -s /bin/bash runner
-COPY --chown=runner:runner gitea-actions-runner /home/runner/
 COPY --chown=runner:runner worker.sh /home/runner/
 COPY --chown=root:root docker-entrypoint.sh /
 RUN <<EOS bash
@@ -23,6 +22,8 @@ set -ex
 
 cd /home/runner
 
+curl -fL -o gitea-actions-runner https://github.com/CrimsonGiteaActions/ChristopherHX-gitea-action-runner/releases/download/v0.0.20%2Bcrimson/ChristopherHX-gitea-action-runner-0.0.20+crimson-linux-amd64
+chown runner:runner gitea-actions-runner
 chmod +x gitea-actions-runner
 chmod +x worker.sh
 EOS

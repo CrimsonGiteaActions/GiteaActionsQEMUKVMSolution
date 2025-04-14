@@ -1,8 +1,9 @@
 #!/bin/bash
 
 set -o errexit -o pipefail
+set -x
 
-WORKING_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WORKING_DIR="$VMSETUP_WORKING_DIR_DOCKER_DAEMON"
 
 CMD_ARGS=$(getopt -a \
   -o "" \
@@ -34,13 +35,12 @@ export DOCKER_BUILD_KIT=1
 export DOCKER_CLI_EXPERIMENTAL=1
 
 rm -rf $WORKING_DIR/worker.sh
-cp $WORKING_DIR/../../daemon/worker.sh .
+cp $VMSETUP_WORKING_DIR_DAEMON/worker.sh $WORKING_DIR
 
 docker buildx build "$WORKING_DIR" --file "$WORKING_DIR/Dockerfile" \
   --progress=plain \
   --pull \
   --build-arg BASE_IMAGE=$docker_image \
-  --platform linux/$(dpkg --print-architecture) \
   -t $docker_tag
 docker buildx stop
 rm -rf $WORKING_DIR/worker.sh

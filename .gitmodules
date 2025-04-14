@@ -1,0 +1,3 @@
+[submodule "worker/ChristopherHX-gitea-actions-runner"]
+	path = worker/ChristopherHX-gitea-actions-runner
+	url = https://github.com/CrimsonGiteaActions/ChristopherHX-gitea-action-runner.git

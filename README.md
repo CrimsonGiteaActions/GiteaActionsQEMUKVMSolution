@@ -1,11 +1,10 @@
-# Gitea Action runner QEMU KVM Solution
+# Gitea Actions QEMU KVM Solution
 
 ## Features
 
-- Run your Gitea Actions workflow in ephemeral virtual machine.
-- Isolate gitea act runner `.runner` file from workflow running environment.
+- Run your Gitea Actions job in ephemeral virtual machine.
+- Isolate gitea act runner `.runner` file from job running environment.
 
-## Choices
+## Document
 
-- [Daemon and Worker in VM](./daemon-and-worker-in-vm.md)
-- [Daemon in Docker, Worker in VM](./daemon-in-docker-worker-in-vm.md)
+- [Click to read](./daemon-in-docker-worker-in-vm.md)

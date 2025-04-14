@@ -38,10 +38,6 @@ chmod 644 .runner
 
 chown -R runner:docker .
 
-if [[ ! -f vm_call_gh_worker.py ]]; then
-  exit 1
-fi
-
 echo "export GNUTLS_CPUID_OVERRIDE=0x1" >> /root/.bashrc
 echo "export GNUTLS_CPUID_OVERRIDE=0x1" >> .bashrc
 

@@ -1,27 +1,30 @@
 #!/bin/bash
 
+# Gitea act runner daemon will call this script to reach the host responsible for running Worker VM
+
+# Reach the host
 host_ssh_username="root"
 host_ssh_host="192.168.122.1"
 host_ssh_port="22"
 host_ssh_private_key=""
 
-host_worker_script=""
-host_qcow2_base_path=""
-host_qcow2_imagename=""
-host_worker_ssh_key=""
-host_vm_network="default"
-host_vm_vcpus="2"
-host_vm_memory="4096"
+# On the host
+worker_qcow2_image=""
+worker_start_vm_script=""
+worker_vm_ssh_key=""
+worker_vm_network="default"
+worker_vm_vcpus="1"
+worker_vm_memory="2048"
 
 CMD_ARGS=$(getopt -a \
   -o "" \
-  --long host-ssh-user:,host-ssh-host:,host-ssh-port:,host-ssh-key:,host-worker-script:,host-worker-base-path:,host-worker-image-name:,host-worker-ssh-key:,host-worker-vm-vcpus:,host-worker-vm-memory: \
+  --long host-ssh-username:,host-ssh-host:,host-ssh-port:,host-ssh-private-key:,worker-qcow2-image:,worker-start-vm-script:,worker-vm-ssh-key:,worker-vm-network:,worker-vm-vcpus:,worker-vm-memory: \
   -- "$@")
 eval set -- "$CMD_ARGS"
 
 while true ; do
   case "$1" in
-    --host-ssh-user)
+    --host-ssh-username)
       host_ssh_username=$2 ;
       shift 2 ;;
     --host-ssh-host)
@@ -30,29 +33,26 @@ while true ; do
     --host-ssh-port)
       host_ssh_port=$2 ;
       shift 2 ;;
-    --host-ssh-key)
+    --host-ssh-private-key)
       host_ssh_private_key=$2 ;
       shift 2 ;;
-    --host-worker-script)
-      host_worker_script=$2 ;
+    --worker-qcow2-image)
+      worker_qcow2_image=$2 ;
       shift 2 ;;
-    --host-worker-base-path)
-      host_qcow2_base_path=$2 ;
+    --worker-start-vm-script)
+      worker_start_vm_script=$2 ;
       shift 2 ;;
-    --host-worker-image-name)
-      host_qcow2_imagename=$2 ;
+    --worker-vm-ssh-key)
+      worker_vm_ssh_key=$2 ;
       shift 2 ;;
-    --host-worker-ssh-key)
-      host_worker_ssh_key=$2 ;
+    --worker-vm-network)
+      worker_vm_network=$2 ;
       shift 2 ;;
-    --host-worker-vm-network)
-      host_vm_network=$2 ;
+    --worker-vm-vcpus)
+      worker_vm_vcpus=$2 ;
       shift 2 ;;
-    --host-worker-vm-vcpus)
-      host_vm_vcpus=$2 ;
-      shift 2 ;;
-    --host-worker-vm-memory)
-      host_vm_memory=$2 ;
+    --worker-vm-memory)
+      worker_vm_memory=$2 ;
       shift 2 ;;
     --)
       shift 1 ;
@@ -68,11 +68,11 @@ if [[ -z "$host_ssh_private_key" ]]; then
   exit 1
 fi
 
-if [[ -z "$host_worker_script" || -z "$host_qcow2_base_path" || -z "$host_qcow2_imagename" || -z "$host_worker_ssh_key" ]]; then
+if [[ -z "$worker_start_vm_script" || -z "$worker_qcow2_image" || -z "$worker_vm_ssh_key" || -z "$worker_vm_network" || -z "$worker_vm_vcpus" || -z "$worker_vm_memory" ]]; then
   echo "Invalid worker setup!"
   exit 1
 fi
 
 # worker/worker.sh
 ssh -i "$host_ssh_private_key" -p "$host_ssh_port" -o BatchMode=yes -o ForwardAgent=no -o IdentitiesOnly=yes -o StrictHostKeyChecking=no "$host_ssh_username@$host_ssh_host" \
-  "bash $host_worker_script --base-path $host_qcow2_base_path --image-name $host_qcow2_imagename --ssh-key $host_worker_ssh_key --vm-network $host_vm_network --vm-memory $host_vm_memory --vm-vcpus $host_vm_vcpus"
+  "bash $worker_start_vm_script --image $worker_qcow2_image --ssh-key $worker_vm_ssh_key --vm-network $worker_vm_network --vm-memory $worker_vm_memory --vm-vcpus $worker_vm_vcpus"

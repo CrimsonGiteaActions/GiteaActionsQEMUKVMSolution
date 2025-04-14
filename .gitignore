@@ -1,2 +1,4 @@
 .idea/
 *.iml
+worker/resolved.conf
+worker/actions-runner-worker.py
