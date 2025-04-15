@@ -70,14 +70,16 @@ export VM_NETWORK="default"
 export UPSTREAM_DNS="1.1.1.1"
 ```
 - Designate a forwarder DNS IP for `VM_NETWORK` (Optional):
-  `<network>` -> `<dns>`
 ```shell
 virsh net-edit $VM_NETWORK
 ```
 ```xml
+<!--
+<network> -> <dns>
+-->
 <dns>
     <!--Change value to your UPSTREAM_DNS-->
-    <forwarder addr='8.8.8.8'/>
+    <forwarder addr='1.1.1.1'/>
 </dns>
 ```
 ```shell
@@ -164,19 +166,22 @@ unset GITEA_RUNNER_REGISTRATION_TOKEN
 ## Notes
 
 - Procedure:
-  - Gitea act runner daemon fetches a task from Gitea.
-  - The daemon calls script to reach host that's responsible for running worker VM.
-  - On the host a worker VM is installed and booted.
-  - Automatically SSH into the worker VM to call a Python script that starts GitHub Runner inside, with contextual information for the runner.
-  - The GitHub Runner contacts Gitea act runner daemon back so to start and run job.
-  - The daemon interprets information from the GitHub Runner and reports back to Gitea.
-  - Finally on job end, the worker VM gets removed.
+1. Gitea act runner daemon fetches a task from Gitea.
+2. The daemon calls script to reach host that's responsible for running worker VM.
+3. On the host a worker VM is installed and booted.
+4. Automatically SSH into the worker VM to call a Python script that starts GitHub Runner inside, with contextual information for the runner.
+5. The GitHub Runner contacts Gitea act runner daemon back so to start and run job.
+6. The daemon interprets information from the GitHub Runner and reports back to Gitea.
+7. Finally on job end, the worker VM gets removed.
 - Tried on host with IPv4/IPv6 forwarding enabled:
 ```text
 net.ipv4.ip_forward=1
 net.ipv6.conf.all.forwarding=1
 ```
-- Firewall (e.g. iptables) may prevent GitHub Runner (that's inside worker VM) from reaching the Gitea act runner daemon. (use `ufw route allow`)
+- Firewall (e.g. iptables) may prevent GitHub Runner (that's inside worker VM) from reaching the Gitea act runner daemon. (`ufw route allow`)
+- On the host give `libvirt-qemu` has full `rwx` access to the project directory (`chmod`, `setfacl`), otherwise could fail to create qcow2 for creating VM.
+- Use `worker` key to SSH into worker VM manually troubleshooting.
+- Don't leave nested KVM running too long.
 
 ## Reference
 
