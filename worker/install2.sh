@@ -11,6 +11,7 @@ cd /home/runner
 
 tar xzf runner.tar.gz
 rm -rf runner.tar.gz
+chmod 555 /home/runner/bin/Runner.Worker
 
 export RUNNER_CONTAINER_HOOKS_VERSION=0.6.2
 
@@ -37,6 +38,7 @@ jq --null-input \
 chmod 644 .runner
 
 chown -R runner:docker .
+chattr +i /home/runner/bin/Runner.Worker
 
 echo "export GNUTLS_CPUID_OVERRIDE=0x1" >> /root/.bashrc
 echo "export GNUTLS_CPUID_OVERRIDE=0x1" >> .bashrc

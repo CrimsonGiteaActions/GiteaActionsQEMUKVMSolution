@@ -31,14 +31,9 @@ while true ; do
   esac
 done
 
-
-rm -rf "$WORKING_DIR/resolved.conf"
-cat <<EOF > "$WORKING_DIR/resolved.conf"
-[Resolve]
-DNS=$UPSTREAM_DNS
-EOF
-
+rm -rf "$WORKING_DIR/ufw-docker-after.rules"
 rm -rf "$WORKING_DIR/actions-runner-worker.py"
+cp "$WORKING_DIR/ufw-docker/after.rules" "$WORKING_DIR/ufw-docker-after.rules"
 cp "$WORKING_DIR/ChristopherHX-gitea-actions-runner/actions-runner-worker.py" "$WORKING_DIR"
 patch -p1 "$WORKING_DIR/actions-runner-worker.py" -i "$WORKING_DIR/actions-runner-worker.py.diff"
 
@@ -57,9 +52,8 @@ virt-builder debian-12 --size $qcow2_size \
   --run-command "chmod 755 /etc/init.d/auto-shutdown" \
   --run-command "chmod 755 /etc/init.d/auto-startup" \
   --run "$WORKING_DIR/install0.sh" \
-  --copy-in "$WORKING_DIR/resolved.conf:/etc/systemd/" \
-  --run-command "systemctl restart systemd-resolved" \
   --run-command "ping -c 3 www.google.com" \
+  --copy-in "$WORKING_DIR/ufw-docker-after.rules:/root/" \
   --run "$WORKING_DIR/install1.sh" \
   --ssh-inject "root:file:$WORKING_DIR/worker.pub" \
   --copy-in "$WORKING_DIR/sshd_config:/etc/ssh/" \
@@ -69,7 +63,7 @@ virt-builder debian-12 --size $qcow2_size \
   --run-command "visudo -c" \
   --run-command 'useradd -u 1000 -G sudo -m -s /bin/bash runner' \
   --run-command 'usermod -aG docker runner' \
-  --run-command 'curl -fL -o "/home/runner/runner.tar.gz" "https://github.com/CrimsonGiteaActions/github-runner/releases/download/v2.322.0%2Bcrimson/actions-runner-linux-x64-2.322.0+crimson.tar.gz"' \
+  --run-command 'curl -fL -o "/home/runner/runner.tar.gz" "https://github.com/CrimsonGiteaActions/github-runner/releases/download/v2.323.0%2Bcrimson/actions-runner-linux-x64-2.323.0+crimson.tar.gz"' \
   --run-command 'chown runner:runner /home/runner/runner.tar.gz' \
   --run-command 'chmod 755 /home/runner/runner.tar.gz' \
   --copy-in "$WORKING_DIR/actions-runner-worker.py:/home/runner/" \
@@ -78,5 +72,5 @@ virt-builder debian-12 --size $qcow2_size \
   --memsize 2048 \
   --output "$qcow2_output"
 
-rm -rf "$WORKING_DIR/resolved.conf"
+rm -rf "$WORKING_DIR/ufw-docker-after.rules"
 rm -rf "$WORKING_DIR/actions-runner-worker.py"

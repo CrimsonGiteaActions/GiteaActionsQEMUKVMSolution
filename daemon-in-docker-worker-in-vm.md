@@ -29,10 +29,10 @@ export VMSETUP_WORKER_PUBKEY="$VMSETUP_WORKING_DIR_WORKER/worker.pub"
 export VMSETUP_WORKER_PRIVKEY="$VMSETUP_WORKING_DIR_WORKER/worker"
 export VMSETUP_DAEMON_TO_HOST_PUBKEY="$VMSETUP_WORKING_DIR/daemon-to-host.pub"
 export VMSETUP_DAEMON_TO_HOST_PRIVKEY="$VMSETUP_WORKING_DIR/daemon-to-host"
-rm -rf "$VMSETUP_WORKER_PRIVKEY"
-rm -rf "$VMSETUP_WORKER_PUBKEY"
-rm -rf "$VMSETUP_DAEMON_TO_HOST_PRIVKEY"
-rm -rf "$VMSETUP_DAEMON_TO_HOST_PUBKEY"
+rm -rf $VMSETUP_WORKER_PRIVKEY
+rm -rf $VMSETUP_WORKER_PUBKEY
+rm -rf $VMSETUP_DAEMON_TO_HOST_PRIVKEY
+rm -rf $VMSETUP_DAEMON_TO_HOST_PUBKEY
 # Generate whatever type of key you prefer
 ssh-keygen -t rsa -b 2048 -f "$VMSETUP_WORKER_PRIVKEY" -N ""
 ssh-keygen -t rsa -b 2048 -f "$VMSETUP_DAEMON_TO_HOST_PRIVKEY" -N ""
@@ -64,11 +64,6 @@ export GITEA_ACTIONS_RUNNER_DAEMON_CONTAINER_NAME="gitea-actions-runner-daemon-1
 # Change value to whichever QEMU KVM network interface you prefer.
 export VM_NETWORK="default"
 ```
-```shell
-# Set a variable. Will be used in install.sh script.
-# Use whatever DNS you prefer
-export UPSTREAM_DNS="1.1.1.1"
-```
 - Designate a forwarder DNS IP for `VM_NETWORK` (Optional):
 ```shell
 virsh net-edit $VM_NETWORK
@@ -78,7 +73,7 @@ virsh net-edit $VM_NETWORK
 <network> -> <dns>
 -->
 <dns>
-    <!--Change value to your UPSTREAM_DNS-->
+    <!--Change value to whatever DNS you prefer-->
     <forwarder addr='1.1.1.1'/>
 </dns>
 ```
@@ -98,6 +93,9 @@ export GITEA_ACTIONS_WORKER_BASE_IMAGE_NAME="debian-act-12.qcow2"
 export GITEA_ACTIONS_WORKER_BASE_IMAGE_SIZE="14G"
 ```
 - Run `install.sh`:
+```shell
+rm -rf $VMSETUP_WORKING_DIR_WORKER/$GITEA_ACTIONS_WORKER_BASE_IMAGE_NAME
+```
 ```shell
 "$VMSETUP_WORKING_DIR_WORKER/install.sh" \
   --qcow2-output "$GITEA_ACTIONS_WORKER_BASE_IMAGE_NAME" \
@@ -179,9 +177,10 @@ net.ipv4.ip_forward=1
 net.ipv6.conf.all.forwarding=1
 ```
 - Firewall (e.g. iptables) may prevent GitHub Runner (that's inside worker VM) from reaching the Gitea act runner daemon. (`ufw route allow`)
-- On the host give `libvirt-qemu` has full `rwx` access to the project directory (`chmod`, `setfacl`), otherwise could fail to create qcow2 for creating VM.
+- On the host give `libvirt-qemu` full `rwx` access to the project directory (`chmod`, `setfacl`), otherwise could fail to create qcow2 for creating VM.
 - Use `worker` key to SSH into worker VM manually troubleshooting.
 - Don't leave nested KVM running too long.
+- Modify `.runner` file to alter `runner_worker`, restart daemon.
 
 ## Reference
 

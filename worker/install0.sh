@@ -14,4 +14,9 @@ apt-get -y install ca-certificates sed
 sed -i 's/http/https/g' /etc/apt/sources.list
 
 apt-get -y update
-apt-get -y install curl make git vim nano sudo wget binutils unzip python3 qemu-guest-agent systemd-resolved
+apt-get -y install curl make git vim nano sudo wget binutils unzip python3 qemu-guest-agent ufw
+
+ufw default deny incoming
+ufw default deny routed
+ufw allow 22/tcp
+ufw enable

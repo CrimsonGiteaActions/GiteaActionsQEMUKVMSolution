@@ -1,3 +1,6 @@
 [submodule "worker/ChristopherHX-gitea-actions-runner"]
 	path = worker/ChristopherHX-gitea-actions-runner
 	url = https://github.com/CrimsonGiteaActions/ChristopherHX-gitea-action-runner.git
+[submodule "worker/ufw-docker"]
+	path = worker/ufw-docker
+	url = https://github.com/CrimsonGiteaActions/ufw-docker.git

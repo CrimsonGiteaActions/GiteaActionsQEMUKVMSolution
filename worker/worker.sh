@@ -120,8 +120,8 @@ run_job() {
   if [ $? -ne 0 ]; then
     echo "Job execution not successful."
   fi
-  destroy_vm
 }
 
 prepare_vm
 run_job
+destroy_vm
