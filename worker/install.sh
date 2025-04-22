@@ -7,7 +7,7 @@ WORKING_DIR="$VMSETUP_WORKING_DIR_WORKER"
 
 CMD_ARGS=$(getopt -a \
   -o "" \
-  --long qcow2-output:,qcow2-size: \
+  --long "qcow2-output:,qcow2-size:,runner-variant:" \
   -- "$@")
 eval set -- "$CMD_ARGS"
 
@@ -22,6 +22,9 @@ while true ; do
     --qcow2-size)
       qcow2_size=$2 ;
       shift 2 ;;
+    --runner-variant)
+      runner_variant=$2 ;
+      shift 2 ;;
     --)
       shift 1 ;
       break ;;
@@ -30,6 +33,19 @@ while true ; do
       exit 1 ;;
   esac
 done
+
+runner_download_url=""
+case "$runner_variant" in
+  crimson)
+    runner_download_url="https://github.com/CrimsonGiteaActions/github-runner/releases/download/v2.323.0%2Bcrimson/actions-runner-linux-x64-2.323.0+crimson.tar.gz" ;;
+  chris)
+    runner_download_url="https://github.com/ChristopherHX/runner.server/releases/download/v3.13.3/runner.server-linux-x64.tar.gz" ;;
+  github)
+    runner_download_url="https://github.com/actions/runner/releases/download/v2.323.0/actions-runner-linux-x64-2.323.0.tar.gz" ;;
+  *)
+    runner_variant="github" ;
+    runner_download_url="https://github.com/actions/runner/releases/download/v2.323.0/actions-runner-linux-x64-2.323.0.tar.gz" ;;
+esac
 
 rm -rf "$WORKING_DIR/ufw-docker-after.rules"
 rm -rf "$WORKING_DIR/actions-runner-worker.py"
@@ -63,9 +79,9 @@ virt-builder debian-12 --size $qcow2_size \
   --run-command "visudo -c" \
   --run-command 'useradd -u 1000 -G sudo -m -s /bin/bash runner' \
   --run-command 'usermod -aG docker runner' \
-  --run-command 'curl -fL -o "/home/runner/runner.tar.gz" "https://github.com/CrimsonGiteaActions/github-runner/releases/download/v2.323.0%2Bcrimson/actions-runner-linux-x64-2.323.0+crimson.tar.gz"' \
-  --run-command 'chown runner:runner /home/runner/runner.tar.gz' \
-  --run-command 'chmod 755 /home/runner/runner.tar.gz' \
+  --run-command "curl -fL -o \"/home/runner/runner-$runner_variant.tar.gz\" \"$runner_download_url\"" \
+  --run-command "chown runner:runner /home/runner/runner-$runner_variant.tar.gz" \
+  --run-command "chmod 755 /home/runner/runner-$runner_variant.tar.gz" \
   --copy-in "$WORKING_DIR/actions-runner-worker.py:/home/runner/" \
   --run "$WORKING_DIR/install2.sh" \
   --network \

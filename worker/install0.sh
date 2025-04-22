@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/sh
 
 set -ex
 
@@ -14,7 +14,7 @@ apt-get -y install ca-certificates sed
 sed -i 's/http/https/g' /etc/apt/sources.list
 
 apt-get -y update
-apt-get -y install curl make git vim nano sudo wget binutils unzip python3 qemu-guest-agent ufw
+apt-get -y install tar curl make cmake git vim nano sudo wget binutils unzip python3 qemu-guest-agent ufw bash libssl-dev openssl zlib1g-dev libpcre2-dev
 
 ufw default deny incoming
 ufw default deny routed

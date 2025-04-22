@@ -97,9 +97,14 @@ export GITEA_ACTIONS_WORKER_BASE_IMAGE_SIZE="14G"
 rm -rf $VMSETUP_WORKING_DIR_WORKER/$GITEA_ACTIONS_WORKER_BASE_IMAGE_NAME
 ```
 ```shell
+# Runner variants: crimson, chris, github
+# crimson: CrimsonGiteaActions/github-runner
+# chris: ChristopherHX/runner.server
+# github: actions/runner
 "$VMSETUP_WORKING_DIR_WORKER/install.sh" \
   --qcow2-output "$GITEA_ACTIONS_WORKER_BASE_IMAGE_NAME" \
-  --qcow2-size "$GITEA_ACTIONS_WORKER_BASE_IMAGE_SIZE"
+  --qcow2-size "$GITEA_ACTIONS_WORKER_BASE_IMAGE_SIZE" \
+  --runner-variant "crimson"
 ```
 
 ### Daemon setup
