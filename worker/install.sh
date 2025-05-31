@@ -39,12 +39,12 @@ case "$runner_variant" in
   crimson)
     runner_download_url="https://github.com/CrimsonGiteaActions/github-runner/releases/download/v2.323.0%2Bcrimson/actions-runner-linux-x64-2.323.0+crimson.tar.gz" ;;
   chris)
-    runner_download_url="https://github.com/ChristopherHX/runner.server/releases/download/v3.13.3/runner.server-linux-x64.tar.gz" ;;
+    runner_download_url="https://github.com/ChristopherHX/runner.server/releases/download/v3.13.4/runner.server-linux-x64.tar.gz" ;;
   github)
-    runner_download_url="https://github.com/actions/runner/releases/download/v2.323.0/actions-runner-linux-x64-2.323.0.tar.gz" ;;
+    runner_download_url="https://github.com/actions/runner/releases/download/v2.324.0/actions-runner-linux-x64-2.324.0.tar.gz" ;;
   *)
     runner_variant="github" ;
-    runner_download_url="https://github.com/actions/runner/releases/download/v2.323.0/actions-runner-linux-x64-2.323.0.tar.gz" ;;
+    runner_download_url="https://github.com/actions/runner/releases/download/v2.324.0/actions-runner-linux-x64-2.324.0.tar.gz" ;;
 esac
 
 rm -rf "$WORKING_DIR/ufw-docker-after.rules"
