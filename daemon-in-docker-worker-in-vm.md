@@ -180,18 +180,25 @@ unset GITEA_RUNNER_REGISTRATION_TOKEN
 
 > [!IMPORTANT]
 > - Firewall (e.g. iptables) may prevent GitHub Runner (that's inside worker VM) from reaching the Gitea act runner daemon. (`ufw route allow from 192.168.122.0/24`)
-> - Iptables rules added by Docker daemon can prevent GitHub Runner from reaching the Gitea act runner daemon.
+> - Iptables rules added by Docker daemon may prevent GitHub Runner from reaching the Gitea act runner daemon.
 > - On the host give `libvirt-qemu` full `rwx` access to the project directory (`chmod`, `setfacl`), otherwise could fail to create qcow2 for creating VM.
 > - Modify `.runner` file to alter `runner_worker`, restart daemon.
 
 > [!TIP]
-> - Use `worker` key to SSH into worker VM manually troubleshooting.
+> - Use `worker` key to SSH into worker VM manually.
 > - Don't leave nested KVM running too long.
 > - This solution is tested on host with IPv4/IPv6 forwarding enabled:
 ```text
 net.ipv4.ip_forward=1
 net.ipv6.conf.all.forwarding=1
 ```
+
+> [!WARNING]
+> Running Gitea act daemon, worker VM and Gitea instance on a same host is NOT recommended! 
+> Much likely have to waste time troubleshooting because of iptables rules. (Especially when running Gitea instance in Docker)
+
+> [!TIP]
+> Initially this solution was done on 2 hosts, one dedicated to running Gitea and the other one had Gitea act daemon and worker VM.
 
 ## Reference
 
