@@ -2,7 +2,8 @@
 
 An amd64-architecture host that supports virtualization. Modern Linux. Debian 12 preferred.
 
-**Nested virtualization not recommended, as it could be faulty for host kernel.**
+> [!WARNING]
+> Nested virtualization not recommended, as it could be faulty for host kernel.
 
 - QEMU KVM Hypervisor
   - deb: `sudo apt-get install libguestfs-tools qemu-system libvirt-clients libvirt-daemon-system`
