@@ -12,7 +12,6 @@ cd buildings
 export NODE_VERSION="16 18 20 22"
 export DISTRO="debian"
 export TYPE="act"
-export RUNNER="runner"
 export DEBIAN_FRONTEND="noninteractive"
 
 mkdir -p /imagegeneration/installers

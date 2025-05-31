@@ -68,8 +68,9 @@ virt-builder debian-12 --size $qcow2_size \
   --run-command "chmod 755 /etc/init.d/auto-shutdown" \
   --run-command "chmod 755 /etc/init.d/auto-startup" \
   --run "$WORKING_DIR/install0.sh" \
-  --run-command "ping -c 3 www.google.com" \
   --copy-in "$WORKING_DIR/ufw-docker-after.rules:/root/" \
+  --run-command 'useradd -u 1000 -G sudo -m -s /bin/bash runner' \
+  --run-command "ping -c 3 www.google.com" \
   --run "$WORKING_DIR/install1.sh" \
   --ssh-inject "root:file:$WORKING_DIR/worker.pub" \
   --copy-in "$WORKING_DIR/sshd_config:/etc/ssh/" \
@@ -77,7 +78,6 @@ virt-builder debian-12 --size $qcow2_size \
   --run-command "chown root:root /etc/sudoers" \
   --run-command "chmod 0440 /etc/sudoers" \
   --run-command "visudo -c" \
-  --run-command 'useradd -u 1000 -G sudo -m -s /bin/bash runner' \
   --run-command 'usermod -aG docker runner' \
   --run-command "curl -fL -o \"/home/runner/runner-$runner_variant.tar.gz\" \"$runner_download_url\"" \
   --run-command "chown runner:runner /home/runner/runner-$runner_variant.tar.gz" \
