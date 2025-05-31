@@ -9,7 +9,7 @@ WORKING_DIR=$(pwd)
 git clone https://github.com/CrimsonGiteaActions/docker_images.git buildings
 cd buildings
 
-export NODE_VERSION="16 18"
+export NODE_VERSION="16 18 20 22"
 export DISTRO="debian"
 export TYPE="act"
 export RUNNER="runner"
