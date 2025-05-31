@@ -168,24 +168,30 @@ unset GITEA_RUNNER_REGISTRATION_TOKEN
 
 ## Notes
 
-- Procedure:
-1. Gitea act runner daemon fetches a task from Gitea.
-2. The daemon calls script to reach host that's responsible for running worker VM.
-3. On the host a worker VM is installed and booted.
-4. Automatically SSH into the worker VM to call a Python script that starts GitHub Runner inside, with contextual information for the runner.
-5. The GitHub Runner contacts Gitea act runner daemon back so to start and run job.
-6. The daemon interprets information from the GitHub Runner and reports back to Gitea.
-7. Finally on job end, the worker VM gets removed.
-- Tried on host with IPv4/IPv6 forwarding enabled:
+> [!NOTE]
+> Procedure:
+> 1. Gitea act runner daemon fetches a task from Gitea.
+> 2. The daemon calls script to reach host that's responsible for running worker VM.
+> 3. On the host a worker VM is installed and booted.
+> 4. Automatically SSH into the worker VM to call a Python script that starts GitHub Runner inside, with contextual information for the runner.
+> 5. The GitHub Runner contacts Gitea act runner daemon back so to start and run job.
+> 6. The daemon interprets information from the GitHub Runner and reports back to Gitea.
+> 7. Finally on job end, the worker VM gets removed.
+
+> [!IMPORTANT]
+> - Firewall (e.g. iptables) may prevent GitHub Runner (that's inside worker VM) from reaching the Gitea act runner daemon. (`ufw route allow from 192.168.122.0/24`)
+> - Iptables rules added by Docker daemon can prevent GitHub Runner from reaching the Gitea act runner daemon.
+> - On the host give `libvirt-qemu` full `rwx` access to the project directory (`chmod`, `setfacl`), otherwise could fail to create qcow2 for creating VM.
+> - Modify `.runner` file to alter `runner_worker`, restart daemon.
+
+> [!TIP]
+> - Use `worker` key to SSH into worker VM manually troubleshooting.
+> - Don't leave nested KVM running too long.
+> - This solution is tested on host with IPv4/IPv6 forwarding enabled:
 ```text
 net.ipv4.ip_forward=1
 net.ipv6.conf.all.forwarding=1
 ```
-- Firewall (e.g. iptables) may prevent GitHub Runner (that's inside worker VM) from reaching the Gitea act runner daemon. (`ufw route allow`)
-- On the host give `libvirt-qemu` full `rwx` access to the project directory (`chmod`, `setfacl`), otherwise could fail to create qcow2 for creating VM.
-- Use `worker` key to SSH into worker VM manually troubleshooting.
-- Don't leave nested KVM running too long.
-- Modify `.runner` file to alter `runner_worker`, restart daemon.
 
 ## Reference
 
