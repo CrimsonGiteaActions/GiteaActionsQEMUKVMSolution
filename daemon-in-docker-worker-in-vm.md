@@ -69,14 +69,13 @@ export VM_NETWORK="default"
 ```shell
 virsh net-edit $VM_NETWORK
 ```
+Use whatever DNS you prefer:
 ```xml
-<!--
-<network> -> <dns>
--->
+<network>
 <dns>
-    <!--Change value to whatever DNS you prefer-->
     <forwarder addr='1.1.1.1'/>
 </dns>
+</network>
 ```
 ```shell
 virsh net-destroy $VM_NETWORK # Only if required.
