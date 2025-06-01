@@ -178,9 +178,11 @@ unset GITEA_RUNNER_REGISTRATION_TOKEN
 > 6. The daemon interprets information from the GitHub Runner and reports back to Gitea.
 > 7. Finally on job end, the worker VM gets removed.
 
-> [!IMPORTANT]
+> [!WARNING]
 > - Firewall (e.g. iptables) may prevent GitHub Runner (that's inside worker VM) from reaching the Gitea act runner daemon. (`ufw route allow from 192.168.122.0/24`)
 > - Iptables rules added by Docker daemon may prevent GitHub Runner from reaching the Gitea act runner daemon.
+
+> [!IMPORTANT]
 > - On the host give `libvirt-qemu` full `rwx` access to the project directory (`chmod`, `setfacl`), otherwise could fail to create qcow2 for creating VM.
 > - Modify `.runner` file to alter `runner_worker`, restart daemon.
 
@@ -192,10 +194,6 @@ unset GITEA_RUNNER_REGISTRATION_TOKEN
 net.ipv4.ip_forward=1
 net.ipv6.conf.all.forwarding=1
 ```
-
-> [!WARNING]
-> Running Gitea act daemon, worker VM and Gitea instance on a same host is NOT recommended! 
-> Much likely have to waste time troubleshooting because of iptables rules. (Especially when running Gitea instance in Docker)
 
 > [!TIP]
 > Initially this solution was done on 2 hosts, one dedicated to running Gitea and the other one had Gitea act daemon and worker VM.
